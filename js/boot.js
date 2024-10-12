@@ -10,6 +10,33 @@ function loadScript(path, onComplete)
     document.head.appendChild(script);
 }
 
+/** Start up Poki SDK */
+function initPokiSDK(onComplete)
+{
+    var PokiSDK = window.PokiSDK;
+
+    // No PokiSDK available, move on.
+    if (!PokiSDK) return onComplete();
+
+    // Promise callback, should be dispatched either way
+    function onInitComplete(adBlockerOn)
+    {
+        PokiSDK.adBlockerOn = adBlockerOn;
+        PokiSDK.gameLoadingStart();
+        if (onComplete) onComplete();
+    }
+
+    // Init the SDK and notify about loading start
+    return PokiSDK.init()
+        .then(function ()
+        {
+            onInitComplete(false);
+        })
+        .catch(function ()
+        {
+            onInitComplete(true);
+        });
+}
 
 /** Init app */
 function initApp()
@@ -75,6 +102,9 @@ preventDefaultKeyboardEvents();
 /** Register service worker if available */
 registerServiceWorker(function ()
 {
- // sds
+    initPokiSDK(function ()
+    {
+        initApp();
+    });
 });
 
